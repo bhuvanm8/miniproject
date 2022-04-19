@@ -1,12 +1,20 @@
-from crypt import methods
-import bcrypt
 from flask import Flask,render_template,redirect,url_for,request
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from datetime import datetime
+from werkzeug.utils import secure_filename
+from pytz import timezone
+import os
+
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///userdb.db"
+app.config["SQLALCHEMY_BINDS"] = {
+    "RepoDB": "sqlite:///repodb.db",
+    "FileDB": "sqlite:///filedb.db"
+}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["UPLOAD_FOLDER"] = "/Users/bhuvanm/Desktop/miniproject/static/files"
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
@@ -20,6 +28,26 @@ class UserDB(db.Model):
 
     def __repr__(self) -> str:
         return f"{self.userName}"
+
+class RepoDB(db.Model):
+    __bind_key__ = 'RepoDB'
+    id = db.Column(db.Integer, primary_key=True)
+    userN = db.Column(db.String(20),nullable=False)
+    nameOfRepo = db.Column(db.String(50),nullable = False)
+    dateCreated = db.Column(db.String(30),default=datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d %H:%M:%S.%f'))
+
+    def __repr__(self) -> str:
+        return f"{self.id}"
+
+class FileDB(db.Model):
+    __bind_key__ = "FileDB"
+    id = db.Column(db.Integer, primary_key=True)
+    userAndRepoName = db.Column(db.String(100),nullable=False)
+    fileName = db.Column(db.Text,nullable=False)
+    name = db.Column(db.String(50),nullable=False)
+    desc = db.Column(db.String(200))
+    mimetype = db.Column(db.Text,nullable=False)
+
 
 @app.route("/")
 def index():
@@ -35,7 +63,9 @@ def register():
             userdob = request.form["udob"]
             userfn = request.form["ufn"]
             userln = request.form["uln"]
-            hashed_userpwd = bcrypt.generate_password_hash(userpwd)
+            if userpwd != request.form["cp"]:
+                return render_template("register.html",x=3)
+            hashed_userpwd = bcrypt.generate_password_hash(userpwd,14)
             user = UserDB(userName=usern,userPassword=hashed_userpwd,userFirstName=userfn,userLastName=userln,userEmailID=usereid,userDOB=userdob)
             db.session.add(user)
             db.session.commit()
@@ -62,7 +92,66 @@ def login():
 @app.route("/profile/<string:uName>")
 def profile(uName):
     user = UserDB.query.filter_by(userName=uName).first()
-    return render_template("profile.html",user=user)
+    repos = RepoDB.query.filter_by(userN=uName).all()
+    return render_template("profile.html",user=user,repos=repos)
+
+@app.route("/profile/<string:uName>/createrepo",methods=["GET","POST"])
+def createRepo(uName):
+    if request.method == "POST":
+        repo = RepoDB(userN=uName,nameOfRepo=request.form["rn"])
+        db.session.add(repo)
+        db.session.commit()
+        return redirect(f"/profile/{uName}")
+    return render_template("createRepo.html",username=uName)
+
+@app.route("/profile/<string:uName>/<int:repoID>")
+def repo(uName,repoID):
+    files = FileDB.query.filter_by(userAndRepoName=uName+str(repoID)).all()
+    return render_template("repo.html",username=uName,repoID=repoID,files=files)
+
+@app.route("/profile/<string:uName>/<int:repoID>/upload",methods=["GET","POST"])
+def fileUpload(uName,repoID):
+    File = request.files["file"]
+    
+    fName = File.filename.split(".")
+    File.filename = fName[0]+ uName + str(datetime.now()) + "." + fName[1]
+    fName = secure_filename(File.filename)
+    File.save(os.path.join(app.config["UPLOAD_FOLDER"],fName))
+    mimetype = File.mimetype
+    file = FileDB(userAndRepoName=uName+str(repoID),fileName=fName,name=request.form["fileName"],desc=request.form["fileDesc"],mimetype=mimetype)
+    db.session.add(file)
+    db.session.commit()
+    return redirect(f"/profile/{uName}/{repoID}")
+
+@app.route("/profile/<string:uName>/appointment")
+def appointment(uName):
+    #eeshan write the code here for appointment 
+    return render_template("appointment.html")
+
+@app.route("/profile/<string:uName>/<int:repoID>/repodelete")
+def repoDelete(uName,repoID):
+    #eeshan write the code here to delete the repository
+    return redirect(f"/profile/{uName}")
+
+@app.route("/profile/<string:uName>/<int:repoID>/repoupdate")
+def repoUpdate(uName,repoID):
+    #eeshan write the code here to update the repository
+    return redirect(f"/profile/{uName}")
+
+@app.route("/profile/<string:uName>/<int:repoID>/<int:fileID>/filedelete")
+def fileDelete(uName,repoID,fileID):
+    #eeshan write the code here to delete the file
+    return redirect(f"/profile/{uName}/{repoID}")
+
+@app.route("/profile/<string:uName>/<int:repoID>/<int:fileID>/fileupdate")
+def fileUpdate(uName,repoID,fileID):
+    #eeshan write the code here to update the file
+    return redirect(f"/profile/{uName}/{repoID}")
+
+@app.route("/profile/<string:uName>/diseasedetection")
+def diseaseDetection(uName):
+    return render_template("diseaseDetection.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

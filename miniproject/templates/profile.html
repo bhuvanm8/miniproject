@@ -9,24 +9,79 @@
   </head>
   <body>
     
+    <div class="container">
+
     <br>
-    <h1>welcome to user profile</h1>
+    <h2>welcome to user profile</h2>
+    <hr>
     <br>
+    <h3>username : {{user.userName}}</h3>
     <br>
-    <h1>username : {{user.userName}}</h1>
+    <h3>user first name : {{user.userFirstName}}</h3>
     <br>
+    <h3>user last name : {{user.userLastName}}</h3>
     <br>
-    <h1>user first name : {{user.userFirstName}}</h1>
+    <h3>user  email id : {{user.userEmailID}}</h3>
     <br>
+    <h3>user DOB : {{user.userDOB}}</h3>
     <br>
-    <h1>user last name : {{user.userLastName}}</h1>
+
+    </div>
+
+    <div class="container">
+      <a href="/profile/{{user.userName}}/appointment" class="btn btn-primary">appointment notes</a>
+    </div>
     <br>
+    <div class="container">
+      <a href="/profile/{{user.userName}}/diseasedetection" class="btn btn-primary">disease detection</a>
+    </div>
     <br>
-    <h1>user  email id : {{user.userEmailID}}</h1>
+    <div class="container">
+    <a href="/profile/{{user.userName}}/createrepo" class="btn btn-primary">create new repository</a>
+    </div>
     <br>
-    <br>
-    <h1>user DOB : {{user.userDOB}}</h1>
-    <br>
+    
+    <div class="container">
+    {% if repos|length == 0 %}
+    <div class="alert alert-danger" role="alert">
+      Repository is empty
+    </div>
+      
+    {% else %}
+
+    <div class="container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name of the repository</th>
+            <th scope="col">Date created</th>
+            <th scope="col">Delete/Edit Repository</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for repo in  repos%}
+          <tr>
+            <th scope="row">{{loop.index}}</th>
+            <td>
+              <a href="/profile/{{user.userName}}/{{repo.id}}" class="btn btn-primary">{{repo.nameOfRepo}}</a>
+            </td>
+            <td>{{repo.dateCreated}}</td>
+            <td>
+              <a href="/profile/{{user.userName}}/{{repo.id}}/repodelete" class="btn btn-primary">Delete</a>
+              <a href="/profile/{{user.userName}}/{{repo.id}}/repoupdate" class="btn btn-primary">Edit</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+      
+    {% endif %}
+
+
+    </div>
+
 
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>

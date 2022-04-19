@@ -31,10 +31,14 @@
               <input type="password" class="form-control" id="up" name="up" required>
             </div>
             <div class="mb-3">
+              <label for="cp" class="form-label">Confirm Password :</label>
+              <input type="password" class="form-control" id="cp" name="cp" required>
+            </div>
+            <div class="mb-3">
               <label for="udob" class="form-label">Date of birth: </label>
               <input type="date" class="form-control" id="udob" name="udob" required>
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Register</button>
           </form>
 
           <br>
@@ -55,6 +59,12 @@
               <br>
               PLEASE LOG IN
             </div>
+          {% endif %}
+
+          {% if x == 3 %}
+          <div class="alert alert-success" role="alert">
+            Password didn't match
+          </div>
           {% endif %}
           
 
