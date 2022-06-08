@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask,render_template,redirect,url_for,request
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -130,23 +131,46 @@ def appointment(uName):
 
 @app.route("/profile/<string:uName>/<int:repoID>/repodelete")
 def repoDelete(uName,repoID):
-    #eeshan write the code here to delete the repository
+    file = FileDB.query.filter_by(userAndRepoName=uName+str(repoID)).all()
+    for f in file:
+        fl = FileDB.query.filter_by(id=f.id).first()
+        db.session.delete(fl)
+        db.session.commit()
+    repo = RepoDB.query.filter_by(id=repoID).first()
+    db.session.delete(repo)
+    db.session.commit()
     return redirect(f"/profile/{uName}")
 
-@app.route("/profile/<string:uName>/<int:repoID>/repoupdate")
+@app.route("/profile/<string:uName>/<int:repoID>/repoupdate",methods=["GET","POST"])
 def repoUpdate(uName,repoID):
-    #eeshan write the code here to update the repository
-    return redirect(f"/profile/{uName}")
+    if request.method == "POST":
+        newName = request.form["run"]
+        rep = RepoDB.query.filter_by(id=repoID).first()
+        rep.nameOfRepo = newName
+        db.session.add(rep)
+        db.session.commit()
+        return redirect(f"/profile/{uName}")
+    repo = RepoDB.query.filter_by(id=repoID).first()
+    return render_template("repoUpdate.html",username=uName,repoID=repoID,repo=repo)
 
 @app.route("/profile/<string:uName>/<int:repoID>/<int:fileID>/filedelete")
 def fileDelete(uName,repoID,fileID):
-    #eeshan write the code here to delete the file
+    file = FileDB.query.filter_by(id=fileID).first()
+    db.session.delete(file)
+    db.session.commit()
     return redirect(f"/profile/{uName}/{repoID}")
 
-@app.route("/profile/<string:uName>/<int:repoID>/<int:fileID>/fileupdate")
+@app.route("/profile/<string:uName>/<int:repoID>/<int:fileID>/fileupdate",methods=["GET","POST"])
 def fileUpdate(uName,repoID,fileID):
-    #eeshan write the code here to update the file
-    return redirect(f"/profile/{uName}/{repoID}")
+    if request.method == "POST":
+        file = FileDB.query.filter_by(id=fileID).first()
+        file.name = request.form["fut"]
+        file.desc = request.form["fud"]
+        db.session.add(file)
+        db.session.commit()
+        return redirect(f"/profile/{uName}/{repoID}")
+    file = FileDB.query.filter_by(id=fileID).first()
+    return render_template("fileUpdate.html",username=uName,repoID=repoID,fileID=fileID,file=file)
 
 @app.route("/profile/<string:uName>/diseasedetection")
 def diseaseDetection(uName):
