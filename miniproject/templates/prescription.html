@@ -10,16 +10,16 @@
 
 
 
-    appointment notes
+    Prescription notes
 
     <div class="container">
-      <a href="/profile/{{username}}/appointment/createAppointment" class="btn btn-primary">Add new appointment</a>
+      <a href="/profile/{{username}}/prescription/createPrescription" class="btn btn-primary">Add new Prescription</a>
     </div>
 
     <div class="container">
-      {% if appos|length == 0 %}
+      {% if pers|length == 0 %}
       <div class="alert alert-success" role="alert">
-        No upcoming appointments
+        No Prescriptions to follow.
       </div>
         
       {% else %}
@@ -29,26 +29,24 @@
           <thead>
             <tr>
               <th scope="col">#</th>
-              <th scope="col">Name of the Doctor</th>
-              <th scope="col">Hospital Name</th>
-              <th scope="col">Date of the appointment</th>
-              <th scope="col">Time of the appointment</th>
+              <th scope="col">Name of the Medicine</th>
+              <th scope="col">Frequency</th>
+              <th scope="col">Duration(In Days)</th>
               <th scope="col">Delete/Edit Details</th>
             </tr>
           </thead>
           <tbody>
-            {% for appo in  appos%}
+            {% for per in  pers%}
             <tr>
               <th scope="row">{{loop.index}}</th>
               <td>
-                  {{appo.doctorN}}
+                  {{per.medN}}
               </td>
-              <td>{{appo.hospitalN}}</td>
-              <td>{{appo.date}}</td>
-              <td>{{appo.time}}</td>
+              <td>{{per.freq}}</td>
+              <td>{{per.duration}}</td>
               <td>
-                <a href="/profile/{{appo.userN}}/{{appo.id}}/appodelete" class="btn btn-primary">Delete</a>
-                <a href="/profile/{{appo.userN}}/{{appo.id}}/appoupdate" class="btn btn-primary">Edit</a>
+                <a href="/profile/{{per.userN}}/{{per.id}}/perdelete" class="btn btn-primary">Delete</a>
+                <a href="/profile/{{per.userN}}/{{per.id}}/perupdate" class="btn btn-primary">Edit</a>
               </td>
             </tr>
             {% endfor %}

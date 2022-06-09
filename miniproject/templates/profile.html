@@ -17,13 +17,13 @@
     <br>
     <h3>username : {{user.userName}}</h3>
     <br>
-    <h3>user first name : {{user.userFirstName}}</h3>
+    <h3>first name : {{user.userFirstName}}</h3>
     <br>
-    <h3>user last name : {{user.userLastName}}</h3>
+    <h3>last name : {{user.userLastName}}</h3>
     <br>
-    <h3>user  email id : {{user.userEmailID}}</h3>
+    <h3>email id : {{user.userEmailID}}</h3>
     <br>
-    <h3>user DOB : {{user.userDOB}}</h3>
+    <h3>DOB : {{user.userDOB}}</h3>
     <br>
 
     </div>
@@ -40,6 +40,14 @@
     <a href="/profile/{{user.userName}}/createrepo" class="btn btn-primary">create new repository</a>
     </div>
     <br>
+    <div class="container">
+      <a href="/profile/{{user.userName}}/prescription" class="btn btn-primary">Prescriptions page</a>
+      </div>
+      <br>
+      <div class="container">
+        <a href="/profile/{{user.userName}}/editProfile" class="btn btn-primary">Edit profile page</a>
+        </div>
+      <br>
     
     <div class="container">
     {% if repos|length == 0 %}
