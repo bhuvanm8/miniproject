@@ -1,4 +1,5 @@
 from crypt import methods
+from django.shortcuts import render
 from flask import Flask,render_template,redirect,url_for,request
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -6,7 +7,8 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from pytz import timezone
 import os
-
+from flask_mail import Mail, Message
+from numpy.random import randint
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///userdb.db"
@@ -20,6 +22,14 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = "/Users/bhuvanm/Desktop/miniproject/static/files"
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
+app.config['MAIL_SERVER']='smtp.office365.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'healmate@outlook.com'
+app.config['MAIL_PASSWORD'] = "miniproject123"
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+mail = Mail(app)
 
 class UserDB(db.Model):
     userName = db.Column(db.String(20),primary_key=True)
@@ -108,6 +118,28 @@ def login():
 
         
     return render_template("login.html")
+
+@app.route("/forgotPassword",methods=["GET","POST"])
+def forgotPwd():
+    if request.method == "POST":
+        username = request.form["fpun"]
+        user = UserDB.query.filter_by(userName=username).first()
+        if not user:
+            return render_template("forgotPwd.html",x=1)
+        else:
+            msg = Message(
+                'HealMate Password Reset',
+                sender ='healmate@outlook.com',
+                recipients = [user.userEmailID]
+               )
+            pwd = str(randint(1000,10000,1)[0])
+            user.userPassword = bcrypt.generate_password_hash(pwd,12)
+            db.session.add(user)
+            db.session.commit()
+            msg.body = f"Hello,{user.userName}\nYour new password is {pwd}"
+            mail.send(msg)
+            return render_template("forgotPwd.html",x=2)
+    return render_template("forgotPwd.html")
 
 @app.route("/profile/<string:uName>")
 def profile(uName):
